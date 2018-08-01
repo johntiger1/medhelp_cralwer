@@ -90,11 +90,17 @@ def create_test_train_split():
         print ("test has {} lines".format(len(test)))
         print ("dev has {} lines".format(len(dev)))
 
+        with open("/h/johnchen/Desktop/git_stuff/medhelp_crawler/medical.train.0", "w") as train_file, open ("/h/johnchen/Desktop/git_stuff/medhelp_crawler/medical.test.0", "w") as test_file, open("/h/johnchen/Desktop/git_stuff/medhelp_crawler/medical.dev.0", "w") as dev_file:
+            # train_file.write("wjhewhqqeh what is going on")
+            train_file.write("".join(train))
+            test_file.write("".join(test))
+            dev_file.write("".join(dev))
 
-    pass
-proc_files()
-create_masterfile()
+# proc_files()
+# create_masterfile()
 create_test_train_split()
-
+print(os.getcwd())
+with open("/h/johnchen/medical.train.0", "w") as train_file, open("medical.test.0", "w") as test_file, open("medical.dev.0",                                                                                 "w") as dev_file:
+    train_file.write("wjhewhqqeh what is going on")
 
 # process_file(filename = "/h/johnchen/Desktop/git_stuff/medhelp_crawler/medhelp/posts/(Diet) same everyday#1939708")
