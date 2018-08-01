@@ -12,29 +12,43 @@ def process_file(filename):
 
         try:
             with open(os.path.join(".." , "processed",  filename + "p"), "w") as write_file:
-                write_file.write(content.replace("\n", ""))
+
+                x = content.replace("\n", "").strip()
+                if len(x.splitlines()) > 1:
+                    print("hmm")
+                    print(file)
+                write_file.write(x)
         except Exception as e:
             print (colored(e, "red"))
             pass
 
 
 def proc_files():
-    counter = 0
 
+    # This is a deprecated approach!
+    counter = 0
+    real_glob =[]
     for file in glob.iglob("../posts/*", recursive=True):
         counter += 1
+        real_glob.append(file.split('/')[-1])
     print (counter)
 
     counter = 0
-
+    os_walk = []
     for (dirpath, dirnames, filenames) in os.walk("../posts"):
 
         for filename in filenames:
             counter +=1
+            os_walk.append(filename)
 
-            # print(filename)
+            if (filename not in real_glob):
+
+                print(filename)
+
             process_file(filename)
         # print("the file is " + filenames)
+
+
     print(counter)
 
 
@@ -43,12 +57,22 @@ def proc_files():
     # process_file(file)
 
 def create_masterfile():
+    counter = 0
     with open("../processed/masterfile.txt", "w") as catfile:
-        counter = 0
-        for file in glob.iglob("../processed/*", recursive=True):
-            counter+=1
-            with open(file) as curr_file:
-                catfile.write("{}\n".format(curr_file.read()))
+        for (dirpath, dirnames, filenames) in os.walk("../processed"):
+
+            for file in filenames:
+
+                # There is an interesting self-read problem here!
+                if file == "masterfile": continue
+                counter+=1
+                with open(os.path.join(dirpath,file)) as curr_file:
+                    content = curr_file.read()
+                    if len(content.splitlines()) > 1:
+                        print ("hmm")
+                        print(file)
+
+                    catfile.write("{}\n".format(content))
         print(counter)
 # creates the test train split
 def create_test_train_split():
@@ -67,7 +91,7 @@ def create_test_train_split():
 
 
     pass
-# proc_files()
+proc_files()
 create_masterfile()
 create_test_train_split()
 
