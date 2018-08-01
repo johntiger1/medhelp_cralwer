@@ -64,11 +64,12 @@ def create_masterfile():
             for file in filenames:
 
                 # There is an interesting self-read problem here!
-                if file == "masterfile": continue
+                if file == "masterfile.txt": continue
                 counter+=1
                 with open(os.path.join(dirpath,file)) as curr_file:
                     content = curr_file.read()
-                    if len(content.splitlines()) > 1:
+                    content_lines = content.splitlines()
+                    if len(content_lines) > 1:
                         print ("hmm")
                         print(file)
 
