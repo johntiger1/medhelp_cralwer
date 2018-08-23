@@ -4,45 +4,61 @@ from termcolor import colored
 from sklearn.model_selection import train_test_split
 import gensim
 import spacy
+from tqdm import tqdm
 
 # Utility script to process crawled medhelp files
 #
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_lg')
+
+
+# on simple posts, they CAN fit almost entirely into a sentence! 300 chars around 50 words!
 
 def process_file(filename):
-    with open("./posts/" + filename, "r") as file:
+    with open("../posts/" + filename, "r") as file:
         # remove all the new lines
         next(file)
         content = file.read()
         # print(os.getcwd())
+        processed_post = ''
+        with open(os.path.join(".." , "aug11_preproc",  filename + "p"), "w") as write_file:
+            # x = content.replace("\n", "").strip()
 
-        try:
-            with open(os.path.join(".." , "aug11_preproc",  filename + "p"), "w") as write_file:
+            doc = nlp(content)
+            for sent in doc.sents:
+                # empirically this would be good
+                # we definitley want the punctuation
 
-                x = content.replace("\n", "").strip()
+                if len(str(sent).split()) > 1:
+                    # print ("SENTENCE COMING " + str(sent))
 
-                doc = nlp(content)
-                for sent in doc.sents:
-                    # empirically this would be good
-                    # we definitley want the punctuation
+                    # Strips out stopwords, numbers and punctuation which is not bad
 
-                    if len(str(sent).split()) > 3:
-                        print (sent)
+                    processed = gensim.utils.simple_preprocess(str(sent))
+
+
+                    if (len(processed) > 3):
+                        pass
+                        # print('pass no block')
+                        # print(' '.join(processed))
+                        processed_sentence = ' '.join(processed)
+                        processed_post += processed_sentence + '\n'
+
+            #             one thing is this: punctuation at the END of a sentence really affects it!
+
+            write_file.write(processed_post)
                         # write_file.write(str(sent))
                         # write_file.write("\n")
 
-                if len(x.splitlines()) > 1:
-                    print("hmm")
-                    print(file)
-                write_file.write(x)
-        except Exception as e:
-            print (colored(e, "red"))
-            pass
+                # if len(x.splitlines()) > 1:
+                #     print("hmm")
+                #     print(file)
+
+        # except Exception as e:
+        #     print (colored(e, "red"))
+        #     pass
 
 
 def proc_files():
-
-
     with open("dummy.txt", "w") as file:
         file.write("adw")
 
@@ -58,18 +74,28 @@ def proc_files():
 
     counter = 0
     os_walk = []
-    for (dirpath, dirnames, filenames) in os.walk("./posts"):
+    for (dirpath, dirnames, filenames) in os.walk("../posts"):
 
-        for filename in filenames:
+        for filename in tqdm(filenames):
             counter +=1
+            if counter < 7000:
+                continue
+
+            # if counter > 7000:
+            #     print(filename)
             os_walk.append(filename)
 
-            if (filename not in real_glob):
+            # if (filename not in real_glob):
+            #
+            #     print(filename)
 
-                print(filename)
-
+            if counter% 1000 == 0:
+                print ("done {} files".format(counter))
+            print ("STARTING" + filename)
             process_file(filename)
-            input()
+            print ("DONE " + filename)
+
+            # input()
         # print("the file is " + filenames)
 
 
@@ -101,6 +127,41 @@ def create_masterfile():
         print(counter)
 
 
+
+# creates it from a list of files, as opposed to a catfile
+def create_test_train_split_from_files():
+
+    list_files = []
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join("..", "aug11_preproc")):
+
+        for file in filenames:
+            list_files.append(file)
+            # There is an interesting self-read problem here!
+
+        train, test = train_test_split(list_files, test_size=0.2)
+        test, dev = train_test_split(test, test_size=0.5)
+
+        with open("pmedical.train.0", "w") as train_file, open ("pmedical.test.0", "w") as test_file, open("pmedical.dev.0", "w") as dev_file:
+            # train_file.write("wjhewhqqeh what is going on")
+
+            for filename in train:
+                with open(os.path.join("..", "aug11_preproc",filename), "r") as file:
+                    train_file.write(file.read())
+
+            for filename in test:
+                with open(os.path.join("..", "aug11_preproc",filename), "r") as file:
+                    test_file.write(file.read())
+
+            for filename in dev:
+                with open(os.path.join("..", "aug11_preproc",filename), "r") as file:
+                    dev_file.write(file.read())
+            # train_file.write("".join(train))
+            # test_file.write("".join(test))
+            # dev_file.write("".join(dev))
+
+
+    print()
+
 # creates the test train split
 def create_test_train_split():
 
@@ -121,6 +182,8 @@ def create_test_train_split():
             train_file.write("".join(train))
             test_file.write("".join(test))
             dev_file.write("".join(dev))
+# /h/johnchen/psql_results/processed
+
 
 def create_test_train_split_mimic():
 
@@ -142,9 +205,13 @@ def create_test_train_split_mimic():
             test_file.write("".join(test))
             dev_file.write("".join(dev))
 
+# process_file("(Diet) same everyday#1939708")
+# process_file("Vagina irritation#1586533")
 
-print(os.getcwd())
-proc_files()
+# print(os.getcwd())
+# proc_files()
+create_test_train_split_from_files()
+print("OK")
 # create_masterfile()
 # create_test_train_split_mimic()
 # with open("/h/johnchen/medical.train.0", "w") as train_file, open("medical.test.0", "w") as test_file, open("medical.dev.0",                                                                                 "w") as dev_file:
